@@ -12,8 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by yehya khaled on 2/27/2015.
@@ -33,6 +35,16 @@ public class PagerFragment extends Fragment
         for (int i = 0;i < NUM_PAGES;i++)
         {
             Date fragmentdate = new Date(System.currentTimeMillis()+((i-2)*86400000));
+
+            String dateSt = "March 3, 2015";// start jd makeup
+            try {
+                DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+                fragmentdate = format.parse(dateSt);
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+            }//end jd makeup
+
             SimpleDateFormat mformat = new SimpleDateFormat("yyyy-MM-dd");
             viewFragments[i] = new MainScreenFragment();
             viewFragments[i].setFragmentDate(mformat.format(fragmentdate));

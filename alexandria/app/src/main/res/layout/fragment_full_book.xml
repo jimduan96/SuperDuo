@@ -11,11 +11,11 @@
                     android:fillViewport="false"
                     android:layout_weight="1">
 
-            <RelativeLayout
-                android:orientation="horizontal"
+            <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|top">
+                android:layout_gravity="center_horizontal|top"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="fill_parent"
@@ -30,29 +30,36 @@
                     android:layout_alignParentStart="true"
                     android:layout_margin="10dp"/>
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/fullBookCover"
-                    android:contentDescription="@string/book_cover"
-                    android:layout_marginTop="15dp"
-                    android:layout_below="@+id/fullBookTitle"
-                    android:layout_alignLeft="@+id/fullBookTitle"
-                    android:layout_alignStart="@+id/fullBookTitle"/>
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|top"
+                android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/fullBookCover"
+                        android:contentDescription="@string/book_cover"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_below="@+id/fullBookTitle"
+                        android:layout_alignLeft="@+id/fullBookTitle"
+                        android:layout_alignStart="@+id/fullBookTitle"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/fullBookSubTitle"
-                    android:maxLines="5"
-                    android:ellipsize="end"
-                    android:textSize="18sp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_alignTop="@+id/fullBookCover"
-                    android:layout_toRightOf="@+id/fullBookCover"
-                    android:layout_toEndOf="@+id/fullBookCover"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/fullBookSubTitle"
+                        android:maxLines="5"
+                        android:ellipsize="end"
+                        android:textSize="18sp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_alignTop="@+id/fullBookCover"
+                        android:layout_toRightOf="@+id/fullBookCover"
+                        android:layout_toEndOf="@+id/fullBookCover"/>
 
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="fill_parent"
@@ -103,7 +110,7 @@
                     android:layout_alignEnd="@+id/fullBookTitle"/>
 
 
-            </RelativeLayout>
+            </LinearLayout>
 
         </ScrollView>
 

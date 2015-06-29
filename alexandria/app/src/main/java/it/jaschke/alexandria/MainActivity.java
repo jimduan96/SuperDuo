@@ -12,10 +12,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import it.jaschke.alexandria.api.Callback;
 
@@ -85,6 +89,19 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 .addToBackStack((String) title)
                 .commit();
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+
+        if (currentFragment instanceof AddBook) {
+            Log.v("FOUND", "find the current fragment");
+
+            currentFragment.onActivityResult(requestCode, resultCode, intent);
+        }
+        super.onActivityResult(requestCode, resultCode, intent);
+    }
+
 
     public void setTitle(int titleId) {
         title = getString(titleId);

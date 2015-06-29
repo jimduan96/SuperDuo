@@ -4,12 +4,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.media.ToneGenerator;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +28,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import it.jaschke.alexandria.data.AlexandriaContract;
 import it.jaschke.alexandria.services.BookService;
@@ -57,6 +69,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         ean = (EditText) rootView.findViewById(R.id.ean);
 
         ean.addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 //no need
@@ -65,25 +78,54 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 //no need
+
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                String ean =s.toString();
+                String eanSt =s.toString();
+                int count = ean.length();
                 //catch isbn10 numbers
-                if(ean.length()==10 && !ean.startsWith("978")){
-                    ean="978"+ean;
+                if(count == 10 || count == 13)
+                {
+                    ean.setTextColor(getResources().getColor(R.color.green_isbn));
+                    if(count == 13){
+                        /*Uri notification = RingtoneManager.getDefaultUri(
+                                RingtoneManager.TYPE_NOTIFICATION);
+                        MediaPlayer mediaPlayer = MediaPlayer.create(
+                                getActivity().getApplicationContext(), notification);
+                        mediaPlayer.start();*/
+                        ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
+                        toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+                    }
                 }
-                if(ean.length()<13){
+                else
+                {
+                    ean.setTextColor(getResources().getColor(R.color.red_isbn));
+                }
+
+                if(eanSt.length()==10 && !eanSt.startsWith("978")){
+                    eanSt="978"+eanSt;
+                }
+                if(eanSt.length()<13){
                     clearFields();
                     return;
                 }
-                //Once we have an ISBN, start a book intent
-                Intent bookIntent = new Intent(getActivity(), BookService.class);
-                bookIntent.putExtra(BookService.EAN, ean);
-                bookIntent.setAction(BookService.FETCH_BOOK);
-                getActivity().startService(bookIntent);
-                AddBook.this.restartLoader();
+
+                if(isNetworkAvailable(getActivity())) {
+                    //Once we have an ISBN, start a book intent
+                    Intent bookIntent = new Intent(getActivity(), BookService.class);
+                    bookIntent.putExtra(BookService.EAN, eanSt);
+                    bookIntent.setAction(BookService.FETCH_BOOK);
+                    getActivity().startService(bookIntent);
+                    AddBook.this.restartLoader();
+                }
+                else
+                {
+                    Toast toast = Toast.makeText(
+                            getActivity(), R.string.no_network_ava, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
             }
         });
 
@@ -96,13 +138,18 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                 // Hint: Use a Try/Catch block to handle the Intent dispatch gracefully, if you
                 // are using an external app.
                 //when you're done, remove the toast below.
-                Context context = getActivity();
-                CharSequence text = "This button should let you scan a book for its barcode!";
+                /*Context context = getActivity();
                 int duration = Toast.LENGTH_SHORT;
 
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+                Toast toast = Toast.makeText(context, R.string.scan_button_hint, duration);
+                toast.show();*/
 
+                //try {
+                    IntentIntegrator.initiateScan(getActivity());
+                /*}catch (Exception e)
+                {
+                    e.printStackTrace();
+                }*/
             }
         });
 
@@ -130,6 +177,29 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //super.onActivityResult(requestCode, resultCode, data);
+        IntentResult scanResult =
+                IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+        if (scanResult != null) {
+            ean.setText(scanResult.getContents());
+            Log.v("Scan", scanResult.getContents()+", " + scanResult.getFormatName());
+        } else {
+            // TODO: Toast reason
+            Log.v("BarcodeActivity", "No result");
+        }
+    }
+
+    static public boolean isNetworkAvailable(Context ct){
+        ConnectivityManager cm =
+                (ConnectivityManager)ct.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
     private void restartLoader(){

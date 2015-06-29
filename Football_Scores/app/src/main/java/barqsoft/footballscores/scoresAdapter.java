@@ -1,14 +1,18 @@
 package barqsoft.footballscores;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by yehya khaled on 2/26/2015.
@@ -75,11 +79,34 @@ public class scoresAdapter extends CursorAdapter
             Button share_button = (Button) v.findViewById(R.id.share_button);
             share_button.setOnClickListener(new View.OnClickListener() {
                 @Override
+                public void onClick(View v) {
+                    //add Share Action
+                    context.startActivity(createShareForecastIntent(mHolder.home_name.getText() + " "
+                            + mHolder.score.getText() + " " + mHolder.away_name.getText() + " "));
+                }
+            });
+            Button towidget_button = (Button) v.findViewById(R.id.addwidget_button);
+            towidget_button.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View v)
                 {
-                    //add Share Action
-                    context.startActivity(createShareForecastIntent(mHolder.home_name.getText()+" "
-                    +mHolder.score.getText()+" "+mHolder.away_name.getText() + " "));
+                    //add widget Action
+                    Intent widgetUpdateIntent =
+                            new Intent(context,FootballAppWidgetProvider.class);
+                    widgetUpdateIntent.setAction(FootballAppWidgetProvider.UPDATEREQ);
+                    int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(
+                            new ComponentName(context,FootballAppWidgetProvider.class));
+                    if(ids != null && ids.length > 0) {
+                        for (int i=0; i<ids.length; i++) {
+                            widgetUpdateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, ids[i]);
+                            widgetUpdateIntent.putExtra(
+                                    FootballAppWidgetProvider.MATCH_ID, mHolder.match_id);
+                            widgetUpdateIntent.setData(
+                                    Uri.parse(widgetUpdateIntent.toUri(Intent.URI_INTENT_SCHEME)));
+                            context.sendBroadcast(widgetUpdateIntent);
+                            Toast.makeText(context, R.string.matchadded, Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 }
             });
         }
